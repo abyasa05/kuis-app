@@ -8,7 +8,8 @@ interface QuizStore {
     isActive: boolean,
     currentNum: number,
     hasHydrated: boolean,
-    setQuestions: (value: QuizPayloadItems[]) => void,
+    setIsActive: (value: boolean) => void,
+    setQuestions: (value: QuizPayloadItems[] | null) => void,
     setAnswers: (index: number, value: string) => void,
     setCurrentNum: (value: number) => void,
     setHydrated: (value: boolean) => void,
@@ -23,10 +24,6 @@ export const useQuizStore = create<QuizStore>()(
             currentNum: 0,
             hasHydrated: false,
 
-            setQuestions: (value) => set((state) =>
-                state.questions ? state : { questions: value }
-            ),
-
             setAnswers: (index, value) => set((state) => {
                 const newAnswers = [...state.answers];
 
@@ -40,13 +37,10 @@ export const useQuizStore = create<QuizStore>()(
                 }
             }),
 
-            setCurrentNum: (value) => set((state) => 
-                state.currentNum ? state : { currentNum: value }
-            ),
-
-            setHydrated: (value) => set((state) => 
-                state.hasHydrated ? state : { hasHydrated: value }
-            ),
+            setQuestions: (value) => set({ questions: value }),
+            setCurrentNum: (value) => set({ currentNum: value }),
+            setHydrated: (value) => set({ hasHydrated: value }),
+            setIsActive: (value) => set({ isActive: value }),
         }),
         {
             name: "quiz-storage",
