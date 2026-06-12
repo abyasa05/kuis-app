@@ -8,6 +8,19 @@ export default function Home() {
   const isActive = useQuizStore((state) => state.isActive);
   const setIsActive = useQuizStore((state) => state.setIsActive);
   const setCurrentNum = useQuizStore((state) => state.setCurrentNum);
+  const clearAnswers = useQuizStore((state) => state.clearAnswers);
+  const setQuestions = useQuizStore((state) => state.setQuestions);
+  const hasHydrated = useQuizStore((state) => state.hasHydrated);
+  const questions = useQuizStore((state) => state.questions);
+
+  useEffect(() => {
+    if (hasHydrated) {
+      if (!isActive && questions) {
+        setQuestions(null);
+        clearAnswers();
+      }
+    }
+  }, [hasHydrated]);
 
   const handleAttemptQuiz = () => {
     if (!isActive) {

@@ -15,10 +15,13 @@ export default function Quiz() {
 	const setcurrentNum = useQuizStore((state) => state.setCurrentNum);
 	const answers = useQuizStore((state) => state.answers)
 	const setAnswer = useQuizStore((state) => state.setAnswer);
-  const clearAnswers = useQuizStore((state) => state.clearAnswers)
-  const setSubmitted = useQuizStore((state) => state.setSubmitted);
+
 	const [selectedItem, setSelectedItem] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [correct, setCorrect] = useState(0);
+  const [incorrect, setIncorrect] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isError, setError] = useState(false);
 
   useEffect(() => {
     if (hasHydrated) {
@@ -47,29 +50,37 @@ export default function Quiz() {
       setIsLoading(false);
     } catch (error) {
       if (error instanceof Error) {
-        window.alert(error.message)
+        setError(true);
         console.log(error);
       }
     }
   }
 
-	const handleFinish = () => {
-    saveSelection();
-    const confirm = window.confirm("Submit quiz?")
-    if (!confirm) {
-      return;
-    }
-
-		setIsActive(false);
-		setQuestions(null);
-    clearAnswers();
-		router.push('/');
-	}
-
   function saveSelection() {
     if (selectedItem !== "" && selectedItem !== answers[currentNum - 1]){
 			setAnswer(currentNum - 1, selectedItem);
 		}
+  }
+
+  function calculateResult() {
+    let correct = 0;
+    let incorrect = 0;
+    
+    if (questions){
+      const currAnswers = useQuizStore.getState().answers;
+      for (let i = 0; i < currAnswers.length; i++){
+        if (currAnswers[i]) {
+          if (currAnswers[i] == questions[i].correct_answer) {
+            correct++;
+          } else {
+            incorrect++;
+          }
+        }
+      }
+
+      setCorrect(correct);
+      setIncorrect(incorrect);
+    }
   }
 
 	const handleChangePage = (direction: string) => {
@@ -78,11 +89,27 @@ export default function Quiz() {
 		direction === 'back' ? setcurrentNum(currentNum - 1) : setcurrentNum(currentNum + 1);
 	}
 
+  const handleSubmit = () => {
+    const confirm = window.confirm("Submit quiz?")
+    if (!confirm) {
+      return;
+    }
+
+    saveSelection();
+    calculateResult();
+    setIsActive(false);
+    setIsModalOpen(true);
+	}
+
+  const handleBack = () => {
+    router.push('/');
+  }
+
   return (
     <div>
       { isLoading ? (
         <div>
-          Loading questions...
+          { isError ? "Please try again later." : "Loading questions..."}
         </div>
       ) : (
         <div>
@@ -92,7 +119,7 @@ export default function Quiz() {
                   <h2>
                     No. { currentNum }/10
                   </h2>
-                  <button onClick={handleFinish}>
+                  <button onClick={handleSubmit}>
                     Finish
                   </button>
                 </div>
@@ -119,7 +146,7 @@ export default function Quiz() {
             )
           }
 
-          <div className="flex justify-between">
+          <div className={`flex ${ currentNum > 1 ? "justify-between" : "justify-end"}`}>
             { currentNum > 1 && (
               <button onClick={() => handleChangePage('back')}>
                 Previous
@@ -130,17 +157,46 @@ export default function Quiz() {
                 Next
               </button>
             ) : (
-              <button onClick={handleFinish}>
+              <button onClick={handleSubmit}>
                 Finish
               </button>
             )}
           </div>
-
-          <div className="flex flex-col">
-            { answers.map((ans, index) => (
-              <p key={index}>{index + 1}. {ans}</p>
-            ))}
+          
+          <div className="flex gap-3.5">
+            <div className="flex flex-col">
+              <h2>Correct Answers</h2>
+              { questions?.map((ans, index) => (
+                <p key={index}>{index + 1}. {ans.correct_answer}</p>
+              ))}
+            </div>
+            <div className="flex flex-col">
+              <h2>My Answers</h2>
+              { answers.map((ans, index) => (
+                <p key={index}>{index + 1}. {ans}</p>
+              ))}
+            </div>
           </div>
+          
+          {/* RESULT MODAL */}
+          { questions && isModalOpen && (
+            <div className="fixed top-0 left-0 w-screen h-screen bg-black/80 z-50 justify-center items-center">
+              <div className="relative bg-white text-black w-[70vw] h-[70vh]">
+                <h1>Result</h1>
+                <div>
+                  <p>Correct answers: { correct }/{ questions.length }</p>
+                  <p>Incorrect answers: { incorrect }/{ questions.length }</p>
+                  <p>Answered: { correct + incorrect }/{ questions.length }</p>
+                </div>
+                <button onClick={handleBack}>
+                  Back to Home
+                </button>
+                { answers.map((ans, index) => (
+                  <p key={index}>{index + 1}. {ans}</p>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ) }
     </div>
