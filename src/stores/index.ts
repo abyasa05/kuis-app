@@ -8,6 +8,7 @@ interface QuizStore {
 
     answers: (string | null)[],
     setAnswer: (index: number, value: string) => void,
+    clearAnswers: () => void,
 
     isActive: boolean,
     setIsActive: (value: boolean) => void,
@@ -44,12 +45,12 @@ export const useQuizStore = create<QuizStore>()(
                     answers: newAnswers
                 }
             }),
-
+            clearAnswers: () => set({ answers: Array(10).fill(null) }),
             setQuestions: (value) => set({ questions: value }),
             setCurrentNum: (value) => set({ currentNum: value }),
             setHydrated: (value) => set({ hasHydrated: value }),
             setIsActive: (value) => set({ isActive: value }),
-            setSubmitted: (value) => set({ isSubmitted: value })
+            setSubmitted: (value) => set({ isSubmitted: value }),
         }),
         {
             name: "quiz-storage",

@@ -15,19 +15,29 @@ export default function Quiz() {
 	const setcurrentNum = useQuizStore((state) => state.setCurrentNum);
 	const answers = useQuizStore((state) => state.answers)
 	const setAnswer = useQuizStore((state) => state.setAnswer);
+  const clearAnswers = useQuizStore((state) => state.clearAnswers)
   const setSubmitted = useQuizStore((state) => state.setSubmitted);
 	const [selectedItem, setSelectedItem] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!isActive && hasHydrated) {
-      router.push('/');
-    }
+    if (hasHydrated) {
+      if (!isActive) {
+        router.push('/');
+      }
 
-    if (!questions && hasHydrated) {
-      getQuestions();
+      if (!questions) {
+        getQuestions();
+      }
     }
   }, [hasHydrated]);
+
+  useEffect(() => {
+    const currentAnswer = answers[currentNum - 1];
+    if (currentAnswer) {
+      setSelectedItem(currentAnswer);
+    }
+  }, [currentNum]);
 
   async function getQuestions() {
     try {
@@ -44,6 +54,7 @@ export default function Quiz() {
   }
 
 	const handleFinish = () => {
+    saveSelection();
     const confirm = window.confirm("Submit quiz?")
     if (!confirm) {
       return;
@@ -51,13 +62,19 @@ export default function Quiz() {
 
 		setIsActive(false);
 		setQuestions(null);
+    clearAnswers();
 		router.push('/');
 	}
 
-	const handleChangePage = (direction: string) => {
-		if (selectedItem !== "" && selectedItem !== answers[currentNum - 1]){
+  function saveSelection() {
+    if (selectedItem !== "" && selectedItem !== answers[currentNum - 1]){
 			setAnswer(currentNum - 1, selectedItem);
 		}
+  }
+
+	const handleChangePage = (direction: string) => {
+    saveSelection();
+    setSelectedItem("");
 		direction === 'back' ? setcurrentNum(currentNum - 1) : setcurrentNum(currentNum + 1);
 	}
 
@@ -97,6 +114,7 @@ export default function Quiz() {
                     ))}
                   </div>
                 </form>
+                <p>currently selected: {selectedItem}</p>
               </div>
             )
           }
@@ -116,6 +134,12 @@ export default function Quiz() {
                 Finish
               </button>
             )}
+          </div>
+
+          <div className="flex flex-col">
+            { answers.map((ans, index) => (
+              <p key={index}>{index + 1}. {ans}</p>
+            ))}
           </div>
         </div>
       ) }
