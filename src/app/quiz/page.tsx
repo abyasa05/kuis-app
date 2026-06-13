@@ -1,11 +1,15 @@
 'use client'
+
 import { getQuizQuestions } from "@/utils"
 import { useQuizStore } from "@/stores"
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, redirect } from "next/navigation"
+import { useSession } from "next-auth/react";
 
 export default function Quiz() {
 	const router = useRouter();
+  const { status, data: session } = useSession();
+
   const questions = useQuizStore((state) => state.questions);
   const setQuestions = useQuizStore((state) => state.setQuestions);
 	const hasHydrated = useQuizStore((state) => state.hasHydrated);
@@ -22,6 +26,12 @@ export default function Quiz() {
   const [incorrect, setIncorrect] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isError, setError] = useState(false);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+        router.replace("/login");
+    }
+  }, [status, router]);
 
   useEffect(() => {
     if (hasHydrated) {
