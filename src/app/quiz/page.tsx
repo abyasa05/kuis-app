@@ -1,10 +1,12 @@
 'use client'
 
-import { getQuizQuestions } from "@/components/utils"
-import { useQuizStore } from "@/components/stores"
-import { useEffect, useState } from "react"
-import { useRouter, redirect } from "next/navigation"
+import { getQuizQuestions } from "@/components/utils";
+import { useQuizStore } from "@/components/stores";
+import Countdown from "@/components/ui/countdown";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import he from "he";
 
 export default function Quiz() {
 	const router = useRouter();
@@ -19,6 +21,7 @@ export default function Quiz() {
 	const setcurrentNum = useQuizStore((state) => state.setCurrentNum);
 	const answers = useQuizStore((state) => state.answers)
 	const setAnswer = useQuizStore((state) => state.setAnswer);
+  const setEndTime = useQuizStore((state) => state.setEndTime)
 
 	const [selectedItem, setSelectedItem] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +61,7 @@ export default function Quiz() {
       const questions = await getQuizQuestions();
       setQuestions(questions);
       setIsLoading(false);
+      setEndTime(Date.now() + 6 * 60 * 1000)
     } catch (error) {
       if (error instanceof Error) {
         setError(true);
@@ -105,11 +109,16 @@ export default function Quiz() {
       return;
     }
 
+    submitQuiz();
+	}
+
+  const submitQuiz = () => {
     saveSelection();
     calculateResult();
     setIsActive(false);
     setIsModalOpen(true);
-	}
+    setEndTime(0);
+  } 
 
   const handleBack = () => {
     router.push('/');
@@ -124,7 +133,7 @@ export default function Quiz() {
       ) : (
         <div>
           { questions && currentNum && (
-              <div>
+              <div className="flex flex-col gap-3.5">
                 <div className="flex justify-between">
                   <h2>
                     No. { currentNum }/10
@@ -133,8 +142,11 @@ export default function Quiz() {
                     Finish
                   </button>
                 </div>
+                <div>
+                  <Countdown onTimeout={submitQuiz}/>
+                </div>
                 <form>
-                  <h3>{ questions[currentNum - 1].question }</h3>
+                  <h3>{ he.decode(questions[currentNum - 1].question) }</h3>
 
                   <div className="flex flex-col">
                     { questions[currentNum - 1].incorrect_answers.map((option) => (
@@ -146,7 +158,7 @@ export default function Quiz() {
                           checked={selectedItem === option}
                           onChange={(e) => setSelectedItem(option)}
                         />
-                        {option}
+                        { he.decode(option) }
                       </label>
                     ))}
                   </div>

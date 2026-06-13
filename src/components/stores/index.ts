@@ -18,6 +18,9 @@ interface QuizStore {
 
     hasHydrated: boolean,
     setHydrated: (value: boolean) => void,
+    
+    endTime: number,
+    setEndTime: (value: number) => void,
 }
 
 export const useQuizStore = create<QuizStore>()( 
@@ -28,6 +31,7 @@ export const useQuizStore = create<QuizStore>()(
             isActive: false,
             currentNum: 0,
             hasHydrated: false,
+            endTime: 0,
 
             setAnswer: (index, value) => set((state) => {
                 const newAnswers = [...state.answers];
@@ -46,6 +50,7 @@ export const useQuizStore = create<QuizStore>()(
             setCurrentNum: (value) => set({ currentNum: value }),
             setHydrated: (value) => set({ hasHydrated: value }),
             setIsActive: (value) => set({ isActive: value }),
+            setEndTime: (value) => set({ endTime: value }),
         }),
         {
             name: "quiz-storage",
