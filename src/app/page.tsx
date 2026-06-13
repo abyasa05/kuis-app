@@ -1,7 +1,7 @@
 'use client'
 
-import { useQuizStore } from "@/stores"
-import { useRouter, redirect } from "next/navigation";
+import { useQuizStore } from "@/components/stores"
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
 

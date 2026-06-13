@@ -1,4 +1,4 @@
-import { QuizPayload, QuizPayloadItems } from "@/types";
+import { QuizPayload, QuizPayloadItems } from "@/components/types";
 
 const BASE_URL = 'https://opentdb.com/api.php'
 

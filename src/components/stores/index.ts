@@ -1,4 +1,4 @@
-import { QuizPayloadItems } from "@/types";
+import { QuizPayloadItems } from "@/components/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware"
 
